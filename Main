@@ -1,0 +1,135 @@
+#include <WiFi.h>
+const char* ssid = "your wifi name";
+const char* password = "your password name";
+WiFiServer server(80);
+
+String header;
+
+String output12State = "off";
+String output14State = "off";
+
+const int en = 13;
+const int output12 = 4;
+const int output14 = 17;
+
+unsigned long currentTime = millis();
+unsigned long previousTime = 0;
+const long timeoutTime = 2000;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(output12, OUTPUT);
+  pinMode(output14, OUTPUT);
+  pinMode(en, OUTPUT);
+
+  digitalWrite(output12, LOW);
+  digitalWrite(output14, LOW);
+  digitalWrite(en, 0);
+
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  server.begin();
+}
+void loop() {
+  WiFiClient client = server.available();
+  if (client) {
+    currentTime = millis();
+    previousTime = currentTime;
+    Serial.println("New Client.");
+    String currentLine = "";
+    while (client.connected() && currentTime - previousTime <= timeoutTime) {
+      currentTime = millis();
+      if (client.available()) {
+        char c = client.read();
+        Serial.write(c);
+        header += c;
+        if (c == '\n') {
+          if (currentLine.length() == 0) {
+            client.println("HTTP/1.1 200 OK");
+            client.println("Content-type:text/html");
+            client.println("Connection: close");
+            client.println();
+            // turns the GPIOs on and off
+            if (header.indexOf("GET /MAJU/on") >= 0) {
+              Serial.println("GPIO 12 on");
+              output12State = "on";
+              digitalWrite(output12, LOW);
+              digitalWrite(output14, HIGH);
+              digitalWrite(en, 255);
+            } else if (header.indexOf("GET /MAJU/off") >= 0) {
+              Serial.println("GPIO 12 off");
+              output12State = "off";
+              digitalWrite(output14, LOW);
+              digitalWrite(output12, LOW);
+
+            } else if (header.indexOf("GET /MUNDUR/on") >= 0) {
+              Serial.println("GPIO 14 on");
+              output14State = "on";
+              digitalWrite(output12, HIGH);
+              digitalWrite(output14, LOW);
+              digitalWrite(en, 255);
+            } else if (header.indexOf("GET /MUNDUR/off") >= 0) {
+              Serial.println("GPIO 14 off");
+              output14State = "off";
+              digitalWrite(output14, LOW);
+              digitalWrite(output12, LOW);
+            }
+            // Display the HTML web page
+            client.println("<!DOCTYPE html><html>");
+            client.println("<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
+            client.println("<link rel=\"icon\" href=\"data:,\">");
+            // CSS to style the on/off buttons
+            // Feel free to change the background-color and font-size attributes to fit your preferences
+            client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center; display: inline-block; transition-duration: 0.4s; cursor: pointer;}");
+            client.println(".button { background-color: #4CAF50; border-radius: 8px; color: white; padding: 16px 40px; ");
+            client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
+            client.println(".button2 {background-color: #f44336;}</style></head>");
+            // Web Page Heading
+            client.println("<body><h1>ESP32 Web Server </h1>");
+            // Display current state, and ON/OFF buttons for GPIO 12
+            client.println("<p>MAJU - State " + output12State + "</p>");
+            // If the output12State is off, it displays the ON button
+            if (output12State == "off") {
+              client.println("<p><a href=\"/MAJU/on\"><button class=\"button\">ON</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/MAJU/off\"><button class=\"button button2\">OFF</button></a></p>");
+            }
+            // Display current state, and ON/OFF buttons for GPIO 14
+            client.println("<p>MUNDUR - State " + output14State + "</p>");
+            // If the output14State is off, it displays the ON button
+            if (output14State == "off") {
+              client.println("<p><a href=\"/MUNDUR/on\"><button class=\"button\">ON</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/MUNDUR/off\"><button class=\"button button2\">OFF</button></a></p>");
+            }
+            client.println("</body></html>");
+            // The HTTP response ends with another blank line
+            client.println();
+            // Break out of the while loop
+            break;
+          } else {
+            currentLine = "";
+          }
+        } else if (c != '\r') {
+          currentLine += c;
+        }
+      }
+    }
+    // Clear the header variable
+    header = "";
+    // Close the connection
+    client.stop();
+    Serial.println("Client disconnected.");
+    Serial.println("");
+  }
+}
