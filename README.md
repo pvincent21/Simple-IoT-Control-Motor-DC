@@ -22,3 +22,9 @@ Wire :
 ![image](https://github.com/pvincent21/Simple-IoT-Control-Motor-DC/assets/88431038/04fbdb62-eebb-4152-a64d-03e084258313)
 
 Video Sirmulation on yputube link https://youtube.com/shorts/yiuVZbj34lk?feature=share 
+
+![2](https://github.com/user-attachments/assets/535e8ab4-e21f-4520-823c-ac3166abe5b4)
+
+
+![3](https://github.com/user-attachments/assets/6d5a36af-14b2-4e68-9692-cc8dc0c46050)
+
