@@ -23,5 +23,5 @@ Wire :
 
 Video Sirmulation on yputube link https://youtube.com/shorts/yiuVZbj34lk?feature=share 
 
-![2](https://github.com/user-attachments/assets/535e8ab4-e21f-4520-823c-ac3166abe5b4) ![3](https://github.com/user-attachments/assets/6d5a36af-14b2-4e68-9692-cc8dc0c46050)
+![2](https://github.com/user-attachments/assets/535e8ab4-e21f-4520-823c-ac3166abe5b4), ![3](https://github.com/user-attachments/assets/6d5a36af-14b2-4e68-9692-cc8dc0c46050)
 
